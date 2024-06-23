@@ -4,13 +4,16 @@ import 'package:push_app/config/router/app_roputer.dart';
 import 'package:push_app/config/theme/app_theme.dart';
 import 'package:push_app/presentation/blocs/notifications/notifications_bloc.dart';
 
-void main() {
+void main() async{
+  
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationsBloc.initializerFCM();
   runApp(
-  MultiBlocProvider(
-  providers: [
-    BlocProvider(create: (_) => NotificationsBloc())
-  ], 
-  child: const MainApp())
+    MultiBlocProvider(
+    providers: [
+      BlocProvider(create: (_) => NotificationsBloc())
+    ], 
+    child: const MainApp())
   );
 }
 
