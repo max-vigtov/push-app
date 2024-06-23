@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1090224137084",
+    "project_id": "flutter-projects-769db",
+    "storage_bucket": "flutter-projects-769db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1090224137084:android:ae27ec012f136883c0faf9",
+        "android_client_info": {
+          "package_name": "com.sylo.push_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6Ero9qr3Q9lhytVO4CGp69Kn_r6mRT68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
