@@ -7,6 +7,15 @@ import 'package:push_app/firebase_options.dart';
 part 'notifications_event.dart';
 part 'notifications_state.dart';
 
+
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
+
+  print("Handling a background message: ${message.messageId}");
+}
+
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -15,6 +24,11 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
     on<NotificationsStatusChanged>( _notificationsStatusChanged );
 
+    // VERIFY NOTIFICATIONS STATUS
+    _initialStatusCheck();
+
+    // NOTIFICATIONS LISTENER TO FOREGROUND
+    _onForegroundMessage();
   }
 
   static Future<void> initializerFCM() async{
@@ -29,6 +43,33 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         status: event.status
       )
     );
+    _getFCMToken();
+  }
+
+  void _initialStatusCheck() async{
+    final settings = await messaging.getNotificationSettings();
+    add(NotificationsStatusChanged(settings.authorizationStatus));
+  }
+
+  void _getFCMToken() async{
+
+    if(state.status != AuthorizationStatus.authorized) return;
+
+    final token = await messaging.getToken();
+    print(token);
+  }  
+
+  void _handleRemoteMessage ( RemoteMessage message ){
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');    
+
+  if (message.notification == null)
+    print('Message also contained a notification: ${message.notification}');
+      
+  }
+
+  void _onForegroundMessage(){
+    FirebaseMessaging.onMessage.listen(_handleRemoteMessage);
   }
 
   void requestPermissions() async{
@@ -43,6 +84,5 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
    );
 
   add(NotificationsStatusChanged(settings.authorizationStatus));
-   
   }  
 }
