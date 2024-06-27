@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:push_app/domain/entity/push_message.dart';
 import 'package:push_app/firebase_options.dart';
 
 part 'notifications_event.dart';
@@ -23,6 +26,11 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
    NotificationsBloc() : super(const NotificationsState()) {
 
     on<NotificationsStatusChanged>( _notificationsStatusChanged );
+
+    on<NotificationReceived>( _onPushMessageReceived );
+
+    //TODO 3: Crear el listener # _onPushMessageReceived
+
 
     // VERIFY NOTIFICATIONS STATUS
     _initialStatusCheck();
@@ -46,6 +54,15 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     _getFCMToken();
   }
 
+  void _onPushMessageReceived(NotificationReceived event, Emitter<NotificationsState> emit){
+    emit(
+      state.copyWith(
+        notifications: [event.pushMessage, ... state.notifications]
+      )
+    );
+    _getFCMToken();
+  }
+
   void _initialStatusCheck() async{
     final settings = await messaging.getNotificationSettings();
     add(NotificationsStatusChanged(settings.authorizationStatus));
@@ -60,12 +77,25 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }  
 
   void _handleRemoteMessage ( RemoteMessage message ){
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');    
+    if (message.notification == null) return;
 
-  if (message.notification == null)
-    print('Message also contained a notification: ${message.notification}');
-      
+    final notification = PushMessage(
+      messageId: message.messageId
+        ?.replaceAll(':', '').replaceAll('%', '')
+        ?? '', 
+      title: message.notification!.title ?? '', 
+      body: message.notification!.body ?? '', 
+      sentDate: message.sentTime ?? DateTime.now(),
+      data: message.data,
+      imageUrl: Platform.isAndroid
+      ? message.notification!.android?.imageUrl
+      : message.notification!.apple?.imageUrl,
+    );
+
+    //TODO 1: Añadir un nuevo evento
+
+    add(NotificationReceived(notification));
+
   }
 
   void _onForegroundMessage(){
